@@ -11,22 +11,6 @@
 
 
 
-/*
-BLEDY:
-1. eval.c  / build_hand_from_match  / ostatnia linijka if (i_eval>4) break; 
-
-  // if less than 5 cards check if card is A
-  if ((hand->cards[index])->value == VALUE_ACE) {
-    if((hand->cards[hand->n_cards-1])->value != 2) return 0;
-    
-    if(((hand->cards[index])->suit != fs) && (fs != NUM_SUITS) ) return 0;
-
-//time saving---
-
-void shuffle(deck_t * d){
-
-*/
-
 int main(int argc, char ** argv) {
 
   if ((argc!=2) && (argc!=3)) {

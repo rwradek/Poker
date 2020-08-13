@@ -1,0 +1,283 @@
+PROBLEMY:
+[~/learn2prog/c4prj3_finish/provided-tests] $ cat test04.txt 
+Kc Qc ?0 ?1 ?2 ?3 ?4
+4s 2s ?0 ?1 ?2 ?3 ?4
+test04.txt: Hand 0 = 63%,  Hand 1 = 36%
+
+[~/learn2prog/c4prj3_finish/provided-tests] $ cat test14.txt 
+Kh As ?0 ?1 ?2
+Kh As ?0 ?1 ?2
+0s 9c ?1 ?2 ?3
+test14.txt: Hand 0 = 0%,   Hand 1 = 0%,  Hand 2 = 31%
+
+3h ?0 Kc ?1 Qh ?2 2h
+Ac ?1 Jd ?2 3d ?3 5c
+Qc ?2 Qd ?3 3h ?4 2s
+Js ?3 0s ?4 9c ?5 6d
+7h ?4 3h ?5 2h ?0 Ah
+Kd ?5 Qh ?0 Js ?1 As
+test16.txt: Hand 0 = 4%,   Hand 1 = 5%,  Hand 2 = 12%,
+            Hand 3 = 8%,   Hand 4 = 58%, Hand 5 = 12%
+
+
+
+
+Ac Jd 5c 5d 4d 3d 2d
+Kc Qh Qs 4d 3h 2d 2h
+
+>> da sie otrzymac ostateczna wersje pilku do kompilacji po dodaniu makr.
+>> Co z tym assert. 
+
+main: eval.c:348: int find_straight(deck_t *, suit_t, hand_eval_t *): Assertion `hand->cards[i]->value == VALUE_ACE && (fs == NUM_SUITS || hand->cards[i]->suit == fs)' failed.
+
+> STRAIGHT_FLUSH
+> STRAIGHT - po koleji
+> FLUSH    - ten sam kolor
+
+
+Qs Qc 7h 2h Qd 0c ?0
+Ks Kc 7h 2h Qd 0c ?0
+
+test01.txt: Hand 0 = 95%,  Hand 1 = 5%
+
+
+
+?0 ?1 ?2 ?3  ?4  ?5 ?6
+?7 ?8 ?9 ?10 ?11 ?0 As
+
+
+
+#include <stdio.h>
+#include <assert.h>
+#include <stdlib.h>
+#include "eval.h"
+#include <string.h>
+#include "future.h"
+#include "input.h"
+
+card_t * card_f_letter(char value_let, char suit_let) {
+  card_t * temp = malloc(sizeof(card_t));
+  temp->suit = NUM_SUITS + 1; //error value for assert to work
+  switch(suit_let){
+    case('s'): temp->suit = SPADES; break;
+    case('h'): temp->suit = HEARTS; break;
+    case('d'): temp->suit = DIAMONDS; break;
+    case('c'): temp->suit = CLUBS; break;
+  };
+   temp->value = (unsigned)value_let - (unsigned)48;
+   switch(value_let){
+    case('A'): temp->value = VALUE_ACE; break;
+    case('K'): temp->value = VALUE_KING; break;
+    case('Q'): temp->value = VALUE_QUEEN; break;
+    case('J'): temp->value = VALUE_JACK; break;
+    case('0'): temp->value = 10; break;
+  } 
+  assert_card_valid(*temp);
+  return temp;
+}
+
+deck_t * create_array(const char *str){
+  int le = strlen(str);
+  assert((le%3) == 0);
+
+  deck_t * hand = malloc(sizeof(*hand));
+  card_t ** ar = malloc((le/3) * sizeof(card_t *));
+  hand->cards = ar;
+  
+  size_t n_i = 0;
+  for (size_t i=0;i<le;i+=3){
+    ar[n_i] = card_f_letter(str[i], str[i+1]);
+    n_i += 1;
+  }
+  hand->n_cards = n_i;
+  return hand;
+};
+
+int main(void) {
+  printf("Hello World\n");
+ 
+  card_t c_ok_1 = {2,SPADES};
+  card_t c_ok_2 = {VALUE_ACE,CLUBS};
+  card_t c_zer = {0,0};
+  
+  deck_t * ddd = malloc(sizeof(*ddd));
+    ddd->cards = NULL;
+    ddd->n_cards =0;
+  add_card_to( ddd , c_ok_2);
+  add_card_to( ddd, c_ok_1);
+  //add_card_to(ddd, c_zer);
+  //card_t * empty = add_empty_card(ddd);
+  //print_hand(ddd);
+  //printf("\nempty %p\n",empty);
+  //free(empty);
+  deck_t * ex = make_deck_exclude(ddd);
+  print_hand(ex);
+  
+  deck_t * hand2 = create_array("As Ac Ks Kc Qh Jh 0d ");
+  deck_t * hand3 = create_array("As Ks Qc 5s 4s 3s 2s "); 
+
+  deck_t * h_array[2] = {hand2,hand3};
+  deck_t * remain_deck = build_remaining_deck(h_array, 2);
+  printf("\n\n--------------------\n");
+  print_hand(remain_deck);
+
+
+  future_cards_t * fc = malloc(sizeof(*fc));
+  fc->decks = NULL;
+  fc->n_decks = 0;
+  
+
+  printf("\n\n--------------------\n");
+  card_t * empty_p;
+  
+  empty_p = add_empty_card(hand2);
+  add_future_card(fc, 7, empty_p) ; 
+  
+  empty_p = add_empty_card(hand3);
+  add_future_card(fc, 0, empty_p) ; 
+
+  empty_p = add_empty_card(hand3);
+  add_future_card(fc, 6, empty_p) ;
+  empty_p = add_empty_card(hand3);
+  add_future_card(fc, 7, empty_p) ;
+  
+  print_hand(hand2);
+  printf("\n");
+  print_hand(hand3);
+  printf("\n");
+
+  future_cards_from_deck(ex, fc);
+  print_hand(hand2);
+  printf("\n");
+  print_hand(hand3);
+  printf("\n");
+
+
+  deck_t * remain_deck_2 = build_remaining_deck(h_array, 2);
+  printf("\n\n--------------------\n");
+  print_hand(remain_deck_2);
+  printf("\n\n--------------------\n");
+
+  unsigned * mached2 =  get_match_counts(hand3);
+   printf("\n\n--------------------\n");
+   print_hand(hand3);
+   printf("\n");
+   for(size_t i=0;i<hand3->n_cards;i++){
+     printf("%u  ",mached2[i]);
+   }
+
+  printf("\n\n--------INPUT--------\n");
+
+  future_cards_t * fc_2 = malloc(sizeof(*fc));
+  fc_2->decks = NULL;
+  fc_2->n_decks = 0;
+
+    FILE * f = fopen("inp.txt","r");
+    if(f == NULL) {
+      perror("Connot open file");
+    }
+  
+  size_t n_hands = 0;
+  deck_t ** my_arr =  read_input(f, &n_hands, fc_2);
+  
+    //close f
+    if(fclose(f)!=0) {
+      perror("Cannot close file");
+    }
+  printf("num of hands %lu\n",n_hands);
+
+  deck_t * yad = my_arr[0];
+  print_hand(yad);
+  printf("(yad)\n");
+  deck_t * yad_2 = my_arr[1];
+  print_hand(yad_2);
+  printf("(yad_2)\n");
+  future_cards_from_deck(ex, fc_2);
+  print_hand(yad);
+  printf("(yad_ex)\n");
+  print_hand(yad_2);
+  printf("(yad_2_ex)\n");
+
+  //future cards - free
+  for(size_t i=0;i<fc_2->n_decks;i++){
+    free(fc_2->decks[i].cards);
+  }
+  free(fc_2->decks);
+  free(fc_2);
+
+
+  for(size_t i=0;i<fc->n_decks;i++){
+    free(fc->decks[i].cards);
+  }
+  free(fc->decks);
+  free(fc);
+   
+  free_deck(yad_2); 
+  free_deck(yad);
+
+  free(my_arr);
+
+  free(mached2);
+  free_deck(remain_deck_2);  
+  free_deck(remain_deck);
+  free_deck(hand2);
+  free_deck(hand3);
+  free_deck(ex);
+  free_deck(ddd);
+  printf("\nBYE\n");
+  return EXIT_SUCCESS;
+
+  printf("Hello World\n");
+  //Ac As Kc Kh 4d 
+/*
+  deck_t hand_er2 = create_array("Ac As Kc Kh 4d ");
+  qsort(hand_er2.cards,hand_er2.n_cards, sizeof(card_t *), card_ptr_comp);
+  print_hand(&hand_er2);
+  printf("Hello World\n");
+
+    case('s'): temp.suit = SPADES; break;
+    case('h'): temp.suit = HEARTS; break;
+    case('d'): temp.suit = DIAMONDS; break;
+    case('c'): temp.suit = CLUBS; break;
+
+
+  
+  deck_t hand2 = create_array("As Ac Ks Kc Qh Jh 0d ");
+  deck_t hand3 = create_array("As Ks Qc 5s 4s 3s 2s "); 
+  deck_t hand_er = create_array("As 9h 8c 7d 6d "); 
+  //print_hand(hand2);
+
+  deck_t hand1 = create_array("4c 3d 2c As Ks 6s 6c ");
+  qsort(hand1.cards,hand1.n_cards, sizeof(card_t *), card_ptr_comp);
+  print_hand(&hand1);
+*/
+  return 0;
+}
+
+/*
+card_t c_ok_1 = {2,SPADES};
+  card_t c_ok_2 = {VALUE_ACE,CLUBS};
+  card_t c_nok_1 = {0,SPADES};
+  card_t c_nok_2 = {2,5};     
+  assert_card_valid(c_ok_1);
+  assert_card_valid(c_ok_2);
+  //assert_card_valid(c_nok_2);
+  printf("%s\n",ranking_to_string(STRAIGHT_FLUSH));
+  printf("%s\n",ranking_to_string(NOTHING));
+  printf("%s\n",ranking_to_string(NOTHING+1));  
+  printf("%c\n",value_letter(c_ok_1));
+  c_ok_1.value=9; printf("%c\n",value_letter(c_ok_1));
+  print_card(c_ok_1);printf("\n");
+  c_ok_1.value=10; printf("%c\n",value_letter(c_ok_1));
+  c_ok_1.value=11; printf("%c\n",value_letter(c_ok_1));
+  c_ok_1.value=14; printf("%c\n",value_letter(c_ok_1));
+  c_ok_1.value=13; print_card(c_ok_1);printf("\n");
+  c_ok_1.value=11; c_ok_1.suit=DIAMONDS; print_card(c_ok_1);printf("\n");
+  print_card(card_from_letters('A', 'h'));printf("\n");
+  printf("const char *restrict __format, ...\n\n");
+  for(int i=0;i<52;i++){
+    if((i%13 == 0) && (i>0))  printf(":%d\n",i);
+    print_card(card_from_num(i));printf(" ");
+  }
+
+*/
